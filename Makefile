@@ -19,7 +19,7 @@ chip: $(OBJS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(OBJS) *.out
 
 distclean: clean
-	$(RM) main
+	$(RM) chip
