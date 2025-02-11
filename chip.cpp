@@ -1,7 +1,10 @@
+#include <format>
 #include <iostream>
 #include <cstdint>
 #include <array>
-
+#include <stack>
+#include <string>
+#include <fstream>
 
 class Font
 {
@@ -31,28 +34,72 @@ public:
     // Registers
     uint16_t pc{};
     uint16_t index{};
-
     // General Variable Registers
     std::array<uint8_t, 16> registers{};
-
     // Stack
-    std::array<uint16_t, 16> stack{};
+    std::stack<uint16_t> stack{};
     uint8_t sp{};
-
     // Memory
     std::array<uint8_t, 4096> memory{};
-    
     // Timers
     uint8_t delay_timer{};
     uint8_t sound_timer{};
-
     // Screen (64 * 32 addressable pixels (0/1 monochrome))
     std::array<uint32_t, 64 * 32> display{};
+    // Keypad
+    std::array<uint8_t, 16> keypad{};
+
+    uint16_t END_ADDRESS = 0x200;
+
+    // Constants
+    const uint16_t START_ADDRESS = 0x200;
+
+    // Methods
+    Interpreter() = default;
+
+
+    void load_rom_into_memory(std::string path)
+    {
+        std::fstream rom{path, rom.binary | rom.in};
+
+        if (!rom.is_open())
+            std::cout << "Failed to open " << path << '\n';
+        else
+        {
+            uint8_t byte;
+            int i = 0;
+            while (rom.read(reinterpret_cast<char*>(&byte), sizeof byte))
+                memory[START_ADDRESS + i++] = byte;
+
+            END_ADDRESS = START_ADDRESS + i;
+        }
+    }
+    
+    void display_memory(uint16_t start_addr)
+    {
+        display_memory(start_addr, END_ADDRESS);
+    }
+
+    void display_memory(uint16_t start_addr, uint16_t end_addr)
+    {
+        const char SEPARATOR = ' ';
+        const char WIDTH = 6;
+        for (int i = start_addr; i < end_addr; ++i)
+        {            
+            if ((i - start_addr) % WIDTH == 0 && i != start_addr)
+                std::cout << '\n';
+            std::cout << std::format("{:#04x}", memory[i]) << SEPARATOR;
+
+        }
+        std::cout << '\n';
+    }
 };
 
 int main()
 {
+    Interpreter chip{};
+    chip.load_rom_into_memory("IBM.ch8");
+    chip.display_memory(0x200);
 
-    std::cout << "Hello\n";
     return 0;
 }
