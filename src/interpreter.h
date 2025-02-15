@@ -2,6 +2,7 @@
 #define INTERPRETER_H
 
 #include "display_manager.h"
+#include "font.h"
 #include <format>
 #include <cstdint>
 #include <array>
@@ -16,6 +17,8 @@ public:
     Interpreter() = default;
 
     void run();
+    void cycle();
+    void load_font_into_memory();
     void load_rom_into_memory(const std::string& path);
     void display_memory(uint16_t start_addr);
     void display_memory(uint16_t start_addr, uint16_t end_addr);
@@ -44,6 +47,10 @@ private:
     mutable std::uint16_t END_ADDRESS = 0x200;
 
     DisplayManager display_manager{};
+    
+    // Font
+    Font font{};
+    static constexpr std::uint16_t FONT_ADDRESS = 0x50;
 };
 
 

@@ -8,7 +8,24 @@ void Interpreter::run()
     {
         // Handle SDL Events
         display_manager.event_loop();
+
+        // Cycle
     }
+}
+
+void Interpreter::cycle()
+{
+    // Fetch
+
+    // Decode
+
+    // Execute
+}
+
+void Interpreter::load_font_into_memory()
+{
+    for (std::uint8_t i = 0; i < font.sprites.size(); ++i)
+        memory[FONT_ADDRESS + i] = font.sprites[i];
 }
 
 void Interpreter::load_rom_into_memory(const std::string& path)
@@ -42,7 +59,6 @@ void Interpreter::display_memory(uint16_t start_addr, uint16_t end_addr)
         if ((i - start_addr) % WIDTH == 0 && i != start_addr)
             std::cout << '\n';
         std::cout << std::format("{:02X}", memory[i]) << SEPARATOR;
-
     }
-    std::cout << '\n';
+    std::cout << "\n";
 }
