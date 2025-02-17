@@ -9,6 +9,14 @@
 #include <stack>
 #include <string>
 
+struct instruction_parameters
+{
+    const std::uint8_t X;     // 4-bit
+    const std::uint8_t Y;     // 4-bit
+    const std::uint8_t N;     // 4-bit (high 4 bits are 0000)
+    const std::uint8_t NN;
+    const std::uint16_t NNN;  // 12-bit (high 4 bits are 0000)
+};
 
 class Interpreter
 {
@@ -16,12 +24,19 @@ public:
     // Methods
     Interpreter() = default;
 
+    void init();
     void run();
     void cycle();
+    void fetch();
+    void step_program_counter();
     void load_font_into_memory();
     void load_rom_into_memory(const std::string& path);
     void display_memory(uint16_t start_addr);
     void display_memory(uint16_t start_addr, uint16_t end_addr);
+    void debug_ip(struct instruction_parameters& ip);
+
+    /* Routines */
+    void routine_00E0();
 
 private:
     // Registers
@@ -41,6 +56,9 @@ private:
     std::array<std::uint32_t, 64 * 32> display{};
     // Keypad
     std::array<std::uint8_t, 16> keypad{};
+
+    // Instructions
+    std::uint16_t curr_instruction{};
 
     // Constants
     static constexpr std::uint16_t START_ADDRESS = 0x200;
