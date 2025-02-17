@@ -3,9 +3,10 @@
 #include <fstream>
 
 void Interpreter::run()
-{
+{    
     while (display_manager.is_running())
     {
+        
         // Handle SDL Events
         display_manager.event_loop();
 

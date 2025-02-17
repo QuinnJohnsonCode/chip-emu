@@ -1,6 +1,8 @@
 #include "display_manager.h"
 #include <iostream>
 
+#include <memory>
+
 DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
 {
     // Critical Error: Video failed to initialize
@@ -11,7 +13,12 @@ DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
     }
 
     // Window
-    window = SDL_CreateWindow("Chip-8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 512, 256, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Chip-8", 
+                            SDL_WINDOWPOS_CENTERED, 
+                            SDL_WINDOWPOS_CENTERED, 
+                            SCREEN_WIDTH, 
+                            SCREEN_HEIGHT, 
+                            SDL_WINDOW_SHOWN);
     if (!window)
     {
         std::cerr << "Window Creation Failed: " << SDL_GetError() << '\n';
@@ -26,6 +33,17 @@ DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
         throw std::runtime_error("Renderer Creation Failed");
     }
 
+    // https://stackoverflow.com/questions/55107529/how-to-create-a-1-bit-per-pixel-surface-with-sdl2
+    // Surface (Store pixel information 64x32)
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 64, 32, 8, SDL_PIXELFORMAT_INDEX8);
+    SDL_SetPaletteColors(surface->format->palette, colors, 0, 2);
+    if (!surface)
+    {
+        std::cerr << "Surface Creation Failed: " << SDL_GetError() << '\n';
+        throw std::runtime_error("Surface Creation Failed");
+    }
+
+
     // Set running
     running = true;
 }
@@ -34,6 +52,7 @@ DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
 DisplayManager::~DisplayManager()
 {
     SDL_DestroyRenderer(renderer);
+    SDL_FreeSurface(surface);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
@@ -45,6 +64,47 @@ void DisplayManager::event_loop()
         if (event.type == SDL_QUIT)
             running = false;
     }
+}
+
+void DisplayManager::delay(std::uint32_t ms)
+{
+    SDL_Delay(ms);
+}
+
+void DisplayManager::draw_from_buffer_scaled(const std::array<std::uint32_t, 64 * 32>& buffer)
+{
+    const int W = 64;
+    const int H = 32;
+
+    // Mirror buffer to surface pixel buffer
+    for (std::uint32_t y = 0; y < W; ++y)
+    {
+        for (std::uint32_t x = 0; x < H; ++x)
+        {
+            int index = (H * y) + x;
+            std::uint8_t *pixels = (std::uint8_t*)surface->pixels;
+            pixels[index] = buffer[index];
+        }
+    }
+
+    /*
+    Note on BlitScaled():
+        BlitSurface() was working on our 64x32 blit to the window's surface, but BlitScaled was not,
+        despite taking in common arguments. Determined that BlitScaled() requires the pixel format of
+        both the src surface and dest surface to match, thus, after writing to our INDEX8 surface, we must use
+        ConvertSurfaceFormat() passing in the dest surface's format with our surface.
+    */
+
+    // Blit
+    SDL_Surface *window_surface = SDL_GetWindowSurface(window);
+    SDL_Surface *converted_surface = SDL_ConvertSurfaceFormat(surface, window_surface->format->format, 0);
+    
+    SDL_RenderClear(renderer);
+    SDL_BlitScaled(converted_surface, &chip_rect, window_surface, &screen_rect);
+    SDL_UpdateWindowSurface(window);
+
+    // Clean up surface copy
+    SDL_FreeSurface(converted_surface);
 }
 
 bool DisplayManager::is_running()
