@@ -75,12 +75,12 @@ void DisplayManager::delay(std::uint32_t ms)
 void DisplayManager::draw_from_buffer_scaled(const std::array<std::uint32_t, 64 * 32>& buffer)
 {
     // Mirror buffer to surface pixel buffer
+    std::uint8_t *pixels = static_cast<std::uint8_t*>(surface->pixels);
     for (std::uint32_t y = 0; y < CHIP_HEIGHT; ++y)
     {
         for (std::uint32_t x = 0; x < CHIP_WIDTH; ++x)
         {
             int index = (CHIP_WIDTH * y) + x;
-            std::uint8_t *pixels = (std::uint8_t*)surface->pixels;
             pixels[index] = buffer[index];
         }
     }
