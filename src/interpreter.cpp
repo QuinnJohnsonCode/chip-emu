@@ -3,7 +3,14 @@
 #include <fstream>
 
 void Interpreter::run()
-{    
+{
+    for (int i = 0; i < 1000; ++i)
+    {
+        display[i] = 1;
+    }
+
+    display_manager.draw_from_buffer_scaled(display);
+
     while (display_manager.is_running())
     {
         
