@@ -17,12 +17,18 @@ void Interpreter::run()
         // Handle SDL Events
         display_manager.event_loop();
 
-        // Cycle
-        cycle();
+        // Decrement timers (TODO)
 
-        // Delay for 1.5ms (660 instructions per second)
-        // (1000 / 660) = ~1.515ms
-        display_manager.delay(1.5);
+        // Cycle
+        // 11 instructions per frame = 660 instructions per second
+        for (int i = 0; i < 11; ++i)
+            cycle();
+
+        // Refresh display
+        display_manager.draw_from_buffer_scaled(display);
+
+        // Delay 16ms
+        display_manager.delay(16);
     }
 }
 
@@ -140,7 +146,6 @@ void Interpreter::routine_00E0()
 {
     // Clear Screen and Display
     std::fill(display.begin(), display.end(), 0);
-    display_manager.draw_from_buffer_scaled(display);
 }
 
 void Interpreter::routine_6xnn(struct instruction_parameters& ip)
@@ -185,9 +190,6 @@ void Interpreter::routine_Dxyn(struct instruction_parameters& ip)
             }
         }
     }
-
-    // Refresh display
-    display_manager.draw_from_buffer_scaled(display);
 }
 
 void Interpreter::routine_1nnn(struct instruction_parameters& ip)
