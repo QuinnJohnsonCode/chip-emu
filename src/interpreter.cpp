@@ -11,9 +11,6 @@ void Interpreter::init()
 
 void Interpreter::run()
 {
-    cycle();
-    cycle();
-    cycle();
     while (display_manager.is_running())
     {
         
@@ -21,6 +18,7 @@ void Interpreter::run()
         display_manager.event_loop();
 
         // Cycle
+        cycle();
 
         // Delay for 16ms
         display_manager.delay(16);
@@ -43,10 +41,32 @@ void Interpreter::cycle()
         .NNN = static_cast<std::uint16_t>(curr_instruction & 0xFFF),
     };
 
-    debug_ip(ip);
-
-
     // Execute
+    switch ((curr_instruction >> 12) & 0xF)
+    {
+        case 0x0:
+            routine_00E0();
+            break;
+        case 0x6:
+            routine_6xnn(ip);
+            break;
+        case 0xA:
+            routine_Annn(ip);
+            break;
+        case 0xD:
+            routine_Dxyn(ip);
+            break;
+        case 0x1:
+            routine_1nnn(ip);
+            break;
+        case 0x7:
+            routine_7xnn(ip);
+            break;
+        default:
+            std::cerr << "Unknown routine: " << std::format("{:04X}", curr_instruction) << '\n';
+            throw std::runtime_error("Unknown routine");
+    }
+
 }
 
 void Interpreter::fetch()
@@ -120,4 +140,63 @@ void Interpreter::routine_00E0()
     // Clear Screen and Display
     std::fill(display.begin(), display.end(), 0);
     display_manager.draw_from_buffer_scaled(display);
+}
+
+void Interpreter::routine_6xnn(struct instruction_parameters& ip)
+{
+    // Set Vx = nn
+    registers[ip.X] = ip.NN;
+}
+
+void Interpreter::routine_Annn(struct instruction_parameters& ip)
+{
+    // Set I = nnn
+    index = ip.NNN;
+}
+
+void Interpreter::routine_Dxyn(struct instruction_parameters& ip)
+{
+    // Draw
+
+    // Set X/Y to Vx % 64 and Vy % 32 respectively
+    auto x = registers[ip.X] & 63;
+    auto y = registers[ip.Y] & 31;
+
+    // Set Vf to 0
+    registers[0xF] = 0;
+
+    for (int row = 0; row < ip.N; ++row)
+    {
+        // Get Nth byte of sprite data using I
+        auto sprite_byte = memory[index + row];
+        for (int col = 0; col < 8; ++col)
+        {
+            std::uint8_t bit = (sprite_byte >> (7 - col)) & 1; // Take first bit
+            std::uint32_t position = (64 * (y + row)) + x + col; // Get (x,y) position offsetted by row/col
+
+            if (bit == 0x01)
+            {
+                if (display[position] == 1)
+                    registers[0xF] = 1;
+                
+                // XOR the display pixel
+                display[position] ^= 1;
+            }
+        }
+    }
+
+    // Refresh display
+    display_manager.draw_from_buffer_scaled(display);
+}
+
+void Interpreter::routine_1nnn(struct instruction_parameters& ip)
+{
+    // Set PC = nnn
+    pc = ip.NNN;
+}
+
+void Interpreter::routine_7xnn(struct instruction_parameters& ip)
+{
+    // Set Vx = Vx + kk
+    registers[ip.X] = registers[ip.X] + ip.NN;
 }

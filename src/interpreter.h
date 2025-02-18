@@ -37,6 +37,11 @@ public:
 
     /* Routines */
     void routine_00E0();
+    void routine_6xnn(struct instruction_parameters& ip);
+    void routine_Annn(struct instruction_parameters& ip);
+    void routine_Dxyn(struct instruction_parameters& ip);
+    void routine_1nnn(struct instruction_parameters& ip);
+    void routine_7xnn(struct instruction_parameters& ip);
 
 private:
     // Registers
