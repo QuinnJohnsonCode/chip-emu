@@ -20,8 +20,9 @@ void Interpreter::run()
         // Cycle
         cycle();
 
-        // Delay for 16ms
-        display_manager.delay(16);
+        // Delay for 1.5ms (660 instructions per second)
+        // (1000 / 660) = ~1.515ms
+        display_manager.delay(1.5);
     }
 }
 
