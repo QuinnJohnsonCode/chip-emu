@@ -28,6 +28,8 @@ public:
     void run();
     void cycle();
     void fetch();
+    void execute(const struct instruction_parameters& ip);
+
     void step_program_counter();
     void load_font_into_memory();
     void load_rom_into_memory(const std::string& path);
@@ -37,11 +39,11 @@ public:
 
     /* Routines */
     void routine_00E0();
-    void routine_6xnn(struct instruction_parameters& ip);
-    void routine_Annn(struct instruction_parameters& ip);
-    void routine_Dxyn(struct instruction_parameters& ip);
-    void routine_1nnn(struct instruction_parameters& ip);
-    void routine_7xnn(struct instruction_parameters& ip);
+    void routine_1nnn(const struct instruction_parameters& ip);
+    void routine_6xnn(const struct instruction_parameters& ip);
+    void routine_7xnn(const struct instruction_parameters& ip);
+    void routine_Annn(const struct instruction_parameters& ip);
+    void routine_Dxyn(const struct instruction_parameters& ip);
 
 private:
     // Registers
@@ -69,7 +71,9 @@ private:
     static constexpr std::uint16_t START_ADDRESS = 0x200;
     mutable std::uint16_t END_ADDRESS = 0x200;
 
+    // Drawing
     DisplayManager display_manager{};
+    bool draw_flag = true; // Draw once
     
     // Font
     Font font{};

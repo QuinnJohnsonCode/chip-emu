@@ -14,7 +14,7 @@ int main()
     //chip.display_memory(0x50, 0xA0);
 
     // Program Memory
-    chip.display_memory(0x200);
+    // chip.display_memory(0x200);
 
     chip.run();
 

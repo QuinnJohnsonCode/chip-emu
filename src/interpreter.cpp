@@ -24,8 +24,12 @@ void Interpreter::run()
         for (int i = 0; i < 11; ++i)
             cycle();
 
-        // Refresh display
-        display_manager.draw_from_buffer_scaled(display);
+        // Refresh display (only draw when display buffer is modified)
+        if (draw_flag)
+        {
+            display_manager.draw_from_buffer_scaled(display);
+            draw_flag = false;
+        }
 
         // Delay 16ms
         display_manager.delay(16);
@@ -34,11 +38,9 @@ void Interpreter::run()
 
 void Interpreter::cycle()
 {
-    /* Fetch */
+    /* Fetch and Decode */
+    
     fetch(); // Stores instruction in curr_instruction
-
-    /* Decode */
-
     // Extract instruction parameters from the current instruction
     struct instruction_parameters ip = {
         .X = static_cast<std::uint8_t>((curr_instruction >> 8) & 0x0F),
@@ -48,32 +50,8 @@ void Interpreter::cycle()
         .NNN = static_cast<std::uint16_t>(curr_instruction & 0xFFF),
     };
 
-    // Execute
-    switch ((curr_instruction >> 12) & 0xF)
-    {
-        case 0x0:
-            routine_00E0();
-            break;
-        case 0x6:
-            routine_6xnn(ip);
-            break;
-        case 0xA:
-            routine_Annn(ip);
-            break;
-        case 0xD:
-            routine_Dxyn(ip);
-            break;
-        case 0x1:
-            routine_1nnn(ip);
-            break;
-        case 0x7:
-            routine_7xnn(ip);
-            break;
-        default:
-            std::cerr << "Unknown routine: " << std::format("{:04X}", curr_instruction) << '\n';
-            throw std::runtime_error("Unknown routine");
-    }
-
+    /* Execute */
+    execute(ip);
 }
 
 void Interpreter::fetch()
@@ -83,6 +61,34 @@ void Interpreter::fetch()
 
     // Increment Program Counter
     step_program_counter();
+}
+
+void Interpreter::execute(const struct instruction_parameters& ip)
+{
+    switch ((curr_instruction >> 12) & 0xF)
+    {
+        case 0x0:
+            routine_00E0();
+            break;
+        case 0x1:
+            routine_1nnn(ip);
+            break;
+        case 0x6:
+            routine_6xnn(ip);
+            break;
+        case 0x7:
+            routine_7xnn(ip);
+            break;
+        case 0xA:
+            routine_Annn(ip);
+            break;
+        case 0xD:
+            routine_Dxyn(ip);
+            break;
+        default:
+            std::cerr << "Unknown routine: " << std::format("{:04X}", curr_instruction) << '\n';
+            throw std::runtime_error("Unknown routine");
+    }
 }
 
 void Interpreter::step_program_counter()
@@ -144,23 +150,35 @@ void Interpreter::debug_ip(struct instruction_parameters& ip)
 /* Routines */
 void Interpreter::routine_00E0()
 {
-    // Clear Screen and Display
     std::fill(display.begin(), display.end(), 0);
+    draw_flag = true;
 }
 
-void Interpreter::routine_6xnn(struct instruction_parameters& ip)
+void Interpreter::routine_1nnn(const struct instruction_parameters& ip)
+{
+    // Set PC = nnn
+    pc = ip.NNN;
+}
+
+void Interpreter::routine_6xnn(const struct instruction_parameters& ip)
 {
     // Set Vx = nn
     registers[ip.X] = ip.NN;
 }
 
-void Interpreter::routine_Annn(struct instruction_parameters& ip)
+void Interpreter::routine_7xnn(const struct instruction_parameters& ip)
+{
+    // Set Vx = Vx + kk
+    registers[ip.X] = registers[ip.X] + ip.NN;
+}
+
+void Interpreter::routine_Annn(const struct instruction_parameters& ip)
 {
     // Set I = nnn
     index = ip.NNN;
 }
 
-void Interpreter::routine_Dxyn(struct instruction_parameters& ip)
+void Interpreter::routine_Dxyn(const struct instruction_parameters& ip)
 {
     // Draw
 
@@ -190,16 +208,6 @@ void Interpreter::routine_Dxyn(struct instruction_parameters& ip)
             }
         }
     }
-}
 
-void Interpreter::routine_1nnn(struct instruction_parameters& ip)
-{
-    // Set PC = nnn
-    pc = ip.NNN;
-}
-
-void Interpreter::routine_7xnn(struct instruction_parameters& ip)
-{
-    // Set Vx = Vx + kk
-    registers[ip.X] = registers[ip.X] + ip.NN;
+    draw_flag = true;
 }
