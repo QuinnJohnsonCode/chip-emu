@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <sstream>
+#include <cmath>
 
 void Interpreter::init()
 {
@@ -68,10 +70,33 @@ void Interpreter::execute(const struct instruction_parameters& ip)
     switch ((curr_instruction >> 12) & 0xF)
     {
         case 0x0:
-            routine_00E0();
+            switch (curr_instruction & 0xF)
+            {
+                case 0x0:
+                    routine_00E0();
+                    break;
+                case 0xE:
+                    routine_00EE();
+                    break;
+                default:
+                    std::cerr << "Unknown routine: " << std::format("{:04X}", curr_instruction) << '\n';
+                    throw std::runtime_error("Unknown routine");
+            }
             break;
         case 0x1:
             routine_1nnn(ip);
+            break;
+        case 0x2:
+            routine_2nnn(ip);
+            break;
+        case 0x3:
+            routine_3xnn(ip);
+            break;
+        case 0x4:
+            routine_4xnn(ip);
+            break;
+        case 0x5:
+            routine_5xy0(ip);
             break;
         case 0x6:
             routine_6xnn(ip);
@@ -79,11 +104,69 @@ void Interpreter::execute(const struct instruction_parameters& ip)
         case 0x7:
             routine_7xnn(ip);
             break;
+        case 0x8:
+            switch (curr_instruction & 0xF)
+            {
+                case 0x0:
+                    routine_8xy0(ip);
+                    break;
+                case 0x1:
+                    routine_8xy1(ip);
+                    break;
+                case 0x2:
+                    routine_8xy2(ip);
+                    break;
+                case 0x3:
+                    routine_8xy3(ip);
+                    break;
+                case 0x4:
+                    routine_8xy4(ip);
+                    break;
+                case 0x5:
+                    routine_8xy5(ip);
+                    break;
+                case 0x6:
+                    routine_8xy6(ip);
+                    break;
+                case 0x7:
+                    routine_8xy7(ip);
+                    break;
+                case 0xE:
+                    routine_8xyE(ip);
+                    break;
+                default:
+                    std::cerr << "Unknown routine: " << std::format("{:04X}", curr_instruction) << '\n';
+                    throw std::runtime_error("Unknown routine");
+            }
+            break;
+        case 0x9:
+            routine_9xy0(ip);
+            break;
         case 0xA:
             routine_Annn(ip);
             break;
         case 0xD:
             routine_Dxyn(ip);
+            break;
+        case 0xF:
+            switch (curr_instruction & 0xFF)
+            {
+                case 0x1E:
+                    routine_Fx1E(ip);
+                    break;
+                case 0x33:
+                    routine_Fx33(ip);
+                    break;
+                case 0x55:
+                    routine_Fx55(ip);
+                    break;
+                case 0x65:
+                    routine_Fx65(ip);
+                    break;
+                default:
+                    std::cerr << "Unknown routine: " << std::format("{:04X}", curr_instruction) << '\n';
+                    throw std::runtime_error("Unknown routine");
+            }
             break;
         default:
             std::cerr << "Unknown routine: " << std::format("{:04X}", curr_instruction) << '\n';
@@ -154,10 +237,45 @@ void Interpreter::routine_00E0()
     draw_flag = true;
 }
 
+void Interpreter::routine_00EE()
+{
+    // Set PC = stack top and pop stack
+    pc = stack.top();
+    stack.pop();
+}
+
 void Interpreter::routine_1nnn(const struct instruction_parameters& ip)
 {
     // Set PC = nnn
     pc = ip.NNN;
+}
+
+void Interpreter::routine_2nnn(const struct instruction_parameters& ip)
+{
+    // Push PC to stack, PC = nnn
+    stack.push(pc);
+    pc = ip.NNN;
+}
+
+void Interpreter::routine_3xnn(const struct instruction_parameters& ip)
+{
+    // Skip instruction if Vx = nn
+    if (registers[ip.X] == ip.NN)
+        step_program_counter();
+}
+
+void Interpreter::routine_4xnn(const struct instruction_parameters& ip)
+{
+    // Skip instruction if Vx != nn
+    if (registers[ip.X] != ip.NN)
+        step_program_counter();
+}
+
+void Interpreter::routine_5xy0(const struct instruction_parameters& ip)
+{
+    // Skip instruction if Vx = Vy
+    if (registers[ip.X] == registers[ip.Y])
+        step_program_counter();
 }
 
 void Interpreter::routine_6xnn(const struct instruction_parameters& ip)
@@ -170,6 +288,74 @@ void Interpreter::routine_7xnn(const struct instruction_parameters& ip)
 {
     // Set Vx = Vx + kk
     registers[ip.X] = registers[ip.X] + ip.NN;
+}
+
+void Interpreter::routine_8xy0(const struct instruction_parameters& ip)
+{
+    // Set Vx = Vy
+    registers[ip.X] = registers[ip.Y];
+}
+
+void Interpreter::routine_8xy1(const struct instruction_parameters& ip)
+{
+    // Set Vx = Vx or Vy
+    registers[ip.X] |= registers[ip.Y];
+}
+
+void Interpreter::routine_8xy2(const struct instruction_parameters& ip)
+{
+    // Set Vx = Vx and Vy
+    registers[ip.X] &= registers[ip.Y];
+}
+
+void Interpreter::routine_8xy3(const struct instruction_parameters& ip)
+{
+    // Set Vx = Vx xor Vy
+    registers[ip.X] ^= registers[ip.Y];
+}
+
+void Interpreter::routine_8xy4(const struct instruction_parameters& ip)
+{
+    // Set Vx = Vx + Vy
+    // Vf = 1 if overflow, otherwise 0
+    std::uint16_t sum = registers[ip.X] + registers[ip.Y];
+    registers[0xF] = (sum > 0xFF) ? 1 : 0;
+    registers[ip.X] = sum & 0xFF;
+}
+
+void Interpreter::routine_8xy5(const struct instruction_parameters& ip)
+{
+    // Set Vx = Vx - Vy
+    registers[ip.X] -= registers[ip.Y];
+}
+
+void Interpreter::routine_8xy6(const struct instruction_parameters& ip)
+{
+    // Set Vx to Vy and shift Vx one bit to the right, set Vf to the bit shifted out
+    registers[ip.X] = registers[ip.Y] >> 1;
+    registers[0xF] = registers[ip.Y] & 0xF; // Put bit to be shifted out in 0xF
+}
+
+void Interpreter::routine_8xy7(const struct instruction_parameters& ip)
+{
+    // Set Vx = Vy - Vx
+    // Vf set to 0 if underflow, 1 if not
+    registers[0xF] = (registers[ip.Y] > registers[ip.X]) ? 0 : 1;
+    registers[ip.X] = registers[ip.Y] - registers[ip.X];
+}
+
+void Interpreter::routine_8xyE(const struct instruction_parameters& ip)
+{
+    // Set Vx to Vy and shift Vx one bit to the left, set Vf to the bit shifted out
+    registers[ip.X] = registers[ip.Y] << 1;
+    registers[0xF] = registers[ip.Y] & 0xF0; // Put bit to be shifted out in 0xF
+}
+
+void Interpreter::routine_9xy0(const struct instruction_parameters& ip)
+{
+    // Skip instruction if Vx != Vy
+    if (registers[ip.X] != registers[ip.Y])
+        step_program_counter();
 }
 
 void Interpreter::routine_Annn(const struct instruction_parameters& ip)
@@ -210,4 +396,42 @@ void Interpreter::routine_Dxyn(const struct instruction_parameters& ip)
     }
 
     draw_flag = true;
+}
+
+void Interpreter::routine_Fx1E(const struct instruction_parameters& ip)
+{
+    // Set I = I + Vx;
+    index += registers[ip.X];
+}
+
+void Interpreter::routine_Fx33(const struct instruction_parameters& ip)
+{
+    // Store BCD of Vx to memory at I, I + 1, and I + 2
+    // Zero out memory locations to initialize
+    memory[index] = 0, memory[index + 1] = 0, memory[index + 2] = 0;
+    int dec = static_cast<int>(registers[ip.X]);
+
+    // Store digits
+    int count = 2;
+    while (dec > 0)
+    {
+        // Place in correct position
+        memory[index + count] = dec % 10;
+        count--;
+        dec /= 10;
+    }
+}
+
+void Interpreter::routine_Fx55(const struct instruction_parameters& ip)
+{
+    // Save registers V0 - Vx to memory starting at I
+    for (std::uint8_t i = 0; i <= ip.X; ++i)
+        memory[index + i] = registers[i];
+}
+
+void Interpreter::routine_Fx65(const struct instruction_parameters& ip)
+{
+    // Load registers V0 - Vx from memory starting at I
+    for (std::uint8_t i = 0; i <= ip.X; ++i)
+        registers[i] = memory[index + i];
 }
