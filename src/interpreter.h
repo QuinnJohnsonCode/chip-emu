@@ -28,41 +28,41 @@ public:
     void run();
     void cycle();
     void fetch();
-    void execute(const struct instruction_parameters& ip);
+    void execute(const  instruction_parameters& ip);
 
     void step_program_counter();
     void load_font_into_memory();
     void load_rom_into_memory(const std::string& path);
     void display_memory(uint16_t start_addr);
     void display_memory(uint16_t start_addr, uint16_t end_addr);
-    void debug_ip(struct instruction_parameters& ip);
+    void debug_ip(const instruction_parameters& ip);
 
     /* Routines */
     void routine_00E0();
     void routine_00EE();
-    void routine_1nnn(const struct instruction_parameters& ip);
-    void routine_2nnn(const struct instruction_parameters& ip);
-    void routine_3xnn(const struct instruction_parameters& ip);
-    void routine_4xnn(const struct instruction_parameters& ip);
-    void routine_5xy0(const struct instruction_parameters& ip);
-    void routine_6xnn(const struct instruction_parameters& ip);
-    void routine_7xnn(const struct instruction_parameters& ip);
-    void routine_8xy0(const struct instruction_parameters& ip);
-    void routine_8xy1(const struct instruction_parameters& ip);
-    void routine_8xy2(const struct instruction_parameters& ip);
-    void routine_8xy3(const struct instruction_parameters& ip);
-    void routine_8xy4(const struct instruction_parameters& ip);
-    void routine_8xy5(const struct instruction_parameters& ip);
-    void routine_8xy6(const struct instruction_parameters& ip);
-    void routine_8xy7(const struct instruction_parameters& ip);
-    void routine_8xyE(const struct instruction_parameters& ip);
-    void routine_9xy0(const struct instruction_parameters& ip);
-    void routine_Annn(const struct instruction_parameters& ip);
-    void routine_Dxyn(const struct instruction_parameters& ip);
-    void routine_Fx1E(const struct instruction_parameters& ip);
-    void routine_Fx33(const struct instruction_parameters& ip);
-    void routine_Fx55(const struct instruction_parameters& ip);
-    void routine_Fx65(const struct instruction_parameters& ip);
+    void routine_1nnn(const instruction_parameters& ip);
+    void routine_2nnn(const instruction_parameters& ip);
+    void routine_3xnn(const instruction_parameters& ip);
+    void routine_4xnn(const instruction_parameters& ip);
+    void routine_5xy0(const instruction_parameters& ip);
+    void routine_6xnn(const instruction_parameters& ip);
+    void routine_7xnn(const instruction_parameters& ip);
+    void routine_8xy0(const instruction_parameters& ip);
+    void routine_8xy1(const instruction_parameters& ip);
+    void routine_8xy2(const instruction_parameters& ip);
+    void routine_8xy3(const instruction_parameters& ip);
+    void routine_8xy4(const instruction_parameters& ip);
+    void routine_8xy5(const instruction_parameters& ip);
+    void routine_8xy6(const instruction_parameters& ip);
+    void routine_8xy7(const instruction_parameters& ip);
+    void routine_8xyE(const instruction_parameters& ip);
+    void routine_9xy0(const instruction_parameters& ip);
+    void routine_Annn(const instruction_parameters& ip);
+    void routine_Dxyn(const instruction_parameters& ip);
+    void routine_Fx1E(const instruction_parameters& ip);
+    void routine_Fx33(const instruction_parameters& ip);
+    void routine_Fx55(const instruction_parameters& ip);
+    void routine_Fx65(const instruction_parameters& ip);
 
 private:
     // Registers
