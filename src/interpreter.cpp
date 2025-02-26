@@ -145,6 +145,9 @@ void Interpreter::execute(const instruction_parameters& ip)
         case 0xA:
             routine_Annn(ip);
             break;
+        case 0xB:
+            routine_Bnnn(ip);
+            break;
         case 0xD:
             routine_Dxyn(ip);
             break;
@@ -373,6 +376,12 @@ void Interpreter::routine_Annn(const instruction_parameters& ip)
 {
     // Set I = nnn
     index = ip.NNN;
+}
+
+void Interpreter::routine_Bnnn(const instruction_parameters& ip)
+{
+    // Jump to address NNN + V0
+    pc = ip.NNN + registers[0];
 }
 
 void Interpreter::routine_Dxyn(const instruction_parameters& ip)
