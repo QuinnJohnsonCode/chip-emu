@@ -319,36 +319,47 @@ void Interpreter::routine_8xy4(const instruction_parameters& ip)
     // Set Vx = Vx + Vy
     // Vf = 1 if overflow, otherwise 0
     std::uint16_t sum = registers[ip.X] + registers[ip.Y];
-    registers[0xF] = (sum > 0xFF) ? 1 : 0;
     registers[ip.X] = sum & 0xFF;
+    registers[0xF] = (sum > 0xFF) ? 1 : 0;
 }
 
 void Interpreter::routine_8xy5(const instruction_parameters& ip)
 {
-    // Set Vx = Vx - Vy
-    registers[ip.X] -= registers[ip.Y];
+    // Set Vx = Vx - Vy (Vf = 0 if underflow, otherwise 0)
+    std::uint8_t reg_x = registers[ip.X];
+    std::uint8_t reg_y = registers[ip.Y];
+    
+    registers[ip.X] = reg_x - reg_y;
+    registers[0xF] = (reg_x < reg_y) ? 0 : 1;
 }
 
 void Interpreter::routine_8xy6(const instruction_parameters& ip)
 {
-    // Set Vx to Vy and shift Vx one bit to the right, set Vf to the bit shifted out
-    registers[ip.X] = registers[ip.Y] >> 1;
-    registers[0xF] = registers[ip.Y] & 0xF; // Put bit to be shifted out in 0xF
+    // Shift Right Vx
+    std::uint8_t bit_out = registers[ip.X] & 0b1;
+    registers[ip.X] >>= 0b1;
+    registers[0xF] = bit_out;
+    
 }
 
 void Interpreter::routine_8xy7(const instruction_parameters& ip)
 {
     // Set Vx = Vy - Vx
     // Vf set to 0 if underflow, 1 if not
-    registers[0xF] = (registers[ip.Y] > registers[ip.X]) ? 0 : 1;
-    registers[ip.X] = registers[ip.Y] - registers[ip.X];
+    std::uint8_t reg_x = registers[ip.X];
+    std::uint8_t reg_y = registers[ip.Y];
+
+    registers[ip.X] = reg_y - reg_x;
+    registers[0xF] = (reg_y < reg_x) ? 0 : 1;
 }
 
 void Interpreter::routine_8xyE(const instruction_parameters& ip)
 {
-    // Set Vx to Vy and shift Vx one bit to the left, set Vf to the bit shifted out
-    registers[ip.X] = registers[ip.Y] << 1;
-    registers[0xF] = registers[ip.Y] & 0xF0; // Put bit to be shifted out in 0xF
+    // Shift Left Vx
+    std::uint8_t bit_out = (registers[ip.X] >> 0x7);
+    registers[ip.X] <<= 0b1;
+    registers[0xF] = bit_out;
+    
 }
 
 void Interpreter::routine_9xy0(const instruction_parameters& ip)
