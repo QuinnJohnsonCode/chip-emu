@@ -19,7 +19,8 @@ void Interpreter::run()
         // Handle SDL Events
         display_manager.event_loop();
 
-        // Decrement timers (TODO)
+        // Decrement timers
+        update_clocks();
 
         // Cycle
         // 11 instructions per frame = 660 instructions per second
@@ -180,6 +181,12 @@ void Interpreter::execute(const instruction_parameters& ip)
 void Interpreter::step_program_counter()
 {
     pc += 2;
+}
+
+void Interpreter::update_clocks()
+{
+    delay_timer = (delay_timer > 0) ? delay_timer - 1 : delay_timer;
+    sound_timer = (sound_timer > 0) ? sound_timer - 1 : sound_timer;
 }
 
 void Interpreter::load_font_into_memory()

@@ -31,6 +31,7 @@ public:
     void execute(const  instruction_parameters& ip);
 
     void step_program_counter();
+    void update_clocks();
     void load_font_into_memory();
     void load_rom_into_memory(const std::string& path);
     void display_memory(uint16_t start_addr);
