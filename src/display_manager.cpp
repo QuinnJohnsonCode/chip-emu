@@ -58,12 +58,22 @@ DisplayManager::~DisplayManager()
     SDL_Quit();
 }
 
-void DisplayManager::event_loop()
+void DisplayManager::event_loop(std::array<std::uint8_t, 16>& chip_keypad)
 {
     while (SDL_PollEvent(&event))
     {
-        if (event.type == SDL_QUIT)
-            running = false;
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                running = false;
+                break;
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+                int key = event.key.keysym.sym;
+                if (auto it = key_map.find(key); it != key_map.end())
+                    chip_keypad[it->second] = (event.type == SDL_KEYDOWN) ? 1 : 0;
+                break;
+        }
     }
 }
 

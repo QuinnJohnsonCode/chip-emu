@@ -17,7 +17,7 @@ void Interpreter::run()
     {
         
         // Handle SDL Events
-        display_manager.event_loop();
+        display_manager.event_loop(keypad);
 
         // Decrement timers
         update_clocks();
