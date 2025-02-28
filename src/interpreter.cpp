@@ -155,6 +155,15 @@ void Interpreter::execute(const instruction_parameters& ip)
         case 0xF:
             switch (curr_instruction & 0xFF)
             {
+                case 0x07:
+                    routine_Fx07(ip);
+                    break;
+                case 0x15:
+                    routine_Fx15(ip);
+                    break;
+                case 0x18:
+                    routine_Fx18(ip);
+                    break;
                 case 0x1E:
                     routine_Fx1E(ip);
                     break;
@@ -423,6 +432,24 @@ void Interpreter::routine_Dxyn(const instruction_parameters& ip)
     }
 
     draw_flag = true;
+}
+
+void Interpreter::routine_Fx07(const instruction_parameters& ip)
+{
+    // Set Vx to delay timer
+    registers[ip.X] = delay_timer;
+}
+
+void Interpreter::routine_Fx15(const instruction_parameters& ip)
+{
+    // Set delay timer to Vx
+    delay_timer = registers[ip.X];
+}
+
+void Interpreter::routine_Fx18(const instruction_parameters& ip)
+{
+    // Set sound timer to Vx
+    sound_timer = registers[ip.X];
 }
 
 void Interpreter::routine_Fx1E(const instruction_parameters& ip)

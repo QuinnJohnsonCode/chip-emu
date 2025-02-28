@@ -61,6 +61,9 @@ public:
     void routine_Annn(const instruction_parameters& ip);
     void routine_Bnnn(const instruction_parameters& ip);
     void routine_Dxyn(const instruction_parameters& ip);
+    void routine_Fx07(const instruction_parameters& ip);
+    void routine_Fx15(const instruction_parameters& ip);
+    void routine_Fx18(const instruction_parameters& ip);
     void routine_Fx1E(const instruction_parameters& ip);
     void routine_Fx33(const instruction_parameters& ip);
     void routine_Fx55(const instruction_parameters& ip);
