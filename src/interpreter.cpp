@@ -23,7 +23,6 @@ void Interpreter::run()
         update_clocks();
 
         // Cycle
-        // 11 instructions per frame = 660 instructions per second
         for (int i = 0; i < 11; ++i)
             cycle();
 
@@ -34,8 +33,8 @@ void Interpreter::run()
             draw_flag = false;
         }
 
-        // Delay 16ms
-        display_manager.delay(16);
+        // Delay 12ms
+        display_manager.delay(12);
     }
 }
 
@@ -152,11 +151,28 @@ void Interpreter::execute(const instruction_parameters& ip)
         case 0xD:
             routine_Dxyn(ip);
             break;
+        case 0xE:
+            switch (curr_instruction & 0xFF)
+            {
+                case 0x9E:
+                    routine_Ex9E(ip);
+                    break;
+                case 0xA1:
+                    routine_ExA1(ip);
+                    break;
+                default:
+                    std::cerr << "Unknown routine: " << std::format("{:04X}", curr_instruction) << '\n';
+                    throw std::runtime_error("Unknown routine");
+            }
+            break;
         case 0xF:
             switch (curr_instruction & 0xFF)
             {
                 case 0x07:
                     routine_Fx07(ip);
+                    break;
+                case 0x0A:
+                    routine_Fx0A(ip);
                     break;
                 case 0x15:
                     routine_Fx15(ip);
@@ -190,6 +206,11 @@ void Interpreter::execute(const instruction_parameters& ip)
 void Interpreter::step_program_counter()
 {
     pc += 2;
+}
+
+void Interpreter::step_back_program_counter()
+{
+    pc -= 2;
 }
 
 void Interpreter::update_clocks()
@@ -434,10 +455,57 @@ void Interpreter::routine_Dxyn(const instruction_parameters& ip)
     draw_flag = true;
 }
 
+void Interpreter::routine_Ex9E(const instruction_parameters& ip)
+{
+    // Skip next opcode if low 4 bits of Vx is pressed
+    std::uint8_t low_nibble = registers[ip.X] & 0x0F;
+    if (keypad[low_nibble])
+        step_program_counter();
+}
+
+void Interpreter::routine_ExA1(const instruction_parameters& ip)
+{
+    // Skip next opcode if low 4 bits of Vx is not pressed
+    std::uint8_t low_nibble = registers[ip.X] & 0x0F;
+    if (!keypad[low_nibble])
+        step_program_counter();
+}
+
 void Interpreter::routine_Fx07(const instruction_parameters& ip)
 {
     // Set Vx to delay timer
     registers[ip.X] = delay_timer;
+}
+
+void Interpreter::routine_Fx0A(const instruction_parameters& ip)
+{
+    // Wait for keypress and set Vx to it
+    bool release_flag = false;
+    static std::uint8_t pressed_key = 0xFF; // Set to invalid key initially
+
+    // pressed_key has a key locked in (wait for release)
+    if (pressed_key != 0xFF)
+    {
+        // If the stored pressed_key is off (released), then continue execution
+        if (!keypad[pressed_key])
+        {
+            registers[ip.X] = keypad[pressed_key];
+            release_flag = true;
+            pressed_key = 0xFF; // Reset pressed_key
+        }
+    }
+
+    if (!release_flag)
+    {
+        for (std::uint8_t key = 0; key < keypad.size(); ++key)
+        {
+            if (keypad[key])
+                pressed_key = key;
+        }
+        
+        // Loop back if no press
+        step_back_program_counter();
+    }
 }
 
 void Interpreter::routine_Fx15(const instruction_parameters& ip)

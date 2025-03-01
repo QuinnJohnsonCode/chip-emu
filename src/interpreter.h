@@ -31,6 +31,7 @@ public:
     void execute(const  instruction_parameters& ip);
 
     void step_program_counter();
+    void step_back_program_counter();
     void update_clocks();
     void load_font_into_memory();
     void load_rom_into_memory(const std::string& path);
@@ -61,7 +62,10 @@ public:
     void routine_Annn(const instruction_parameters& ip);
     void routine_Bnnn(const instruction_parameters& ip);
     void routine_Dxyn(const instruction_parameters& ip);
+    void routine_Ex9E(const instruction_parameters& ip);
+    void routine_ExA1(const instruction_parameters& ip);
     void routine_Fx07(const instruction_parameters& ip);
+    void routine_Fx0A(const instruction_parameters& ip);
     void routine_Fx15(const instruction_parameters& ip);
     void routine_Fx18(const instruction_parameters& ip);
     void routine_Fx1E(const instruction_parameters& ip);
