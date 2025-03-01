@@ -67,6 +67,7 @@ void Interpreter::fetch()
 
 void Interpreter::execute(const instruction_parameters& ip)
 {
+    // std::cout << "Curr: " << std::format("{:04X}", curr_instruction) << '\n';
     switch ((curr_instruction >> 12) & 0xF)
     {
         case 0x0:
@@ -426,8 +427,8 @@ void Interpreter::routine_Dxyn(const instruction_parameters& ip)
     // Draw
 
     // Set X/Y to Vx % 64 and Vy % 32 respectively
-    auto x = registers[ip.X] & 63;
-    auto y = registers[ip.Y] & 31;
+    auto x = registers[ip.X] % 64;
+    auto y = registers[ip.Y] % 32;
 
     // Set Vf to 0
     registers[0xF] = 0;
@@ -440,14 +441,14 @@ void Interpreter::routine_Dxyn(const instruction_parameters& ip)
         {
             std::uint8_t bit = (sprite_byte >> (7 - col)) & 1; // Take first bit
             std::uint32_t position = (64 * (y + row)) + x + col; // Get (x,y) position offsetted by row/col
-
+            
             if (bit == 0x01)
             {
-                if (display[position] == 1)
+                if (display[position] == 0xFFFFFFFF)
                     registers[0xF] = 1;
                 
                 // XOR the display pixel
-                display[position] ^= 1;
+                display[position] ^= 0xFFFFFFFF;
             }
         }
     }

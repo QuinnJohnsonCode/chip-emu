@@ -34,14 +34,12 @@ DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
         throw std::runtime_error("Renderer Creation Failed");
     }
 
-    // https://stackoverflow.com/questions/55107529/how-to-create-a-1-bit-per-pixel-surface-with-sdl2
-    // Surface (Store pixel information 64x32)
-    surface = SDL_CreateRGBSurfaceWithFormat(0, 64, 32, 8, SDL_PIXELFORMAT_INDEX8);
-    SDL_SetPaletteColors(surface->format->palette, colors, 0, 2);
-    if (!surface)
+    // Texture
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, CHIP_WIDTH, CHIP_HEIGHT);
+    if (!texture)
     {
-        std::cerr << "Surface Creation Failed: " << SDL_GetError() << '\n';
-        throw std::runtime_error("Surface Creation Failed");
+        std::cerr << "Texture Creation Failed: " << SDL_GetError() << '\n';
+        throw std::runtime_error("Texture Creation Failed");
     }
 
 
@@ -53,7 +51,7 @@ DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
 DisplayManager::~DisplayManager()
 {
     SDL_DestroyRenderer(renderer);
-    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
@@ -84,35 +82,10 @@ void DisplayManager::delay(std::uint32_t ms)
 
 void DisplayManager::draw_from_buffer_scaled(const std::array<std::uint32_t, 64 * 32>& buffer)
 {
-    // Mirror buffer to surface pixel buffer
-    std::uint8_t *pixels = static_cast<std::uint8_t*>(surface->pixels);
-    for (std::uint32_t x = 0; x < CHIP_WIDTH; ++x)
-    {
-        for (std::uint32_t y = 0; y < CHIP_HEIGHT; ++y)
-        {
-            int index = (CHIP_WIDTH * y) + x;
-            pixels[index] = buffer[index];
-        }
-    }
-
-    /*
-    Note on BlitScaled():
-        BlitSurface() was working on our 64x32 blit to the window's surface, but BlitScaled was not,
-        despite taking in common arguments. Determined that BlitScaled() requires the pixel format of
-        both the src surface and dest surface to match, thus, after writing to our INDEX8 surface, we must use
-        ConvertSurfaceFormat() passing in the dest surface's format with our surface.
-    */
-
-    // Blit
-    SDL_Surface *window_surface = SDL_GetWindowSurface(window);
-    SDL_Surface *converted_surface = SDL_ConvertSurfaceFormat(surface, window_surface->format->format, 0);
-    
+    SDL_UpdateTexture(texture, nullptr, static_cast<const void*>(buffer.data()), pitch);
     SDL_RenderClear(renderer);
-    SDL_BlitScaled(converted_surface, &chip_rect, window_surface, &screen_rect);
-    SDL_UpdateWindowSurface(window);
-
-    // Clean up surface copy
-    SDL_FreeSurface(converted_surface);
+    SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+    SDL_RenderPresent(renderer);
 }
 
 bool DisplayManager::is_running()

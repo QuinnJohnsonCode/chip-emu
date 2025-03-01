@@ -24,7 +24,8 @@ private:
     // SDL-Related
     SDL_Window* window;
     SDL_Renderer* renderer;
-    SDL_Surface* surface;
+    // SDL_Surface* surface;
+    SDL_Texture* texture;
     SDL_Event event;
 
     // Screen Constants
@@ -33,6 +34,7 @@ private:
     static constexpr int CHIP_HEIGHT = 32;
     static constexpr int SCREEN_WIDTH = CHIP_WIDTH * STRETCH_FACTOR;
     static constexpr int SCREEN_HEIGHT = CHIP_HEIGHT * STRETCH_FACTOR;
+    static constexpr int pitch = 256;
 
     SDL_Rect chip_rect{0, 0, CHIP_WIDTH, CHIP_HEIGHT};
     SDL_Rect screen_rect{0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
