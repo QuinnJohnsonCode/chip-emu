@@ -1,18 +1,19 @@
 #include "interpreter.h"
 #include <iostream>
+#include <string>
 
-int main()
+int main(int argc, char *argv[])
 {
+    // Handle command-line
+    std::string rom_path{"../roms/1-chip8-logo.ch8"};
+    if (argc > 1)
+        rom_path = argv[1];
+
     Interpreter chip{};
 
     chip.init();
     chip.load_font_into_memory();
-    // chip.load_rom_into_memory("../roms/1-chip8-logo.ch8");
-    // chip.load_rom_into_memory("../roms/2-ibm-logo.ch8");
-    // chip.load_rom_into_memory("../roms/3-corax.ch8");
-    // chip.load_rom_into_memory("../roms/4-flags.ch8");
-    chip.load_rom_into_memory("../roms/5-quirks.ch8");
-    // chip.load_rom_into_memory("../roms/6-keypad.ch8");
+    chip.load_rom_into_memory(rom_path);
 
     // Font Memory
     //chip.display_memory(0x50, 0xA0);
