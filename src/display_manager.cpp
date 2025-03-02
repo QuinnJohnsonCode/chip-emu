@@ -42,12 +42,6 @@ DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
         throw std::runtime_error("Texture Creation Failed");
     }
 
-    if (Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0)
-    {
-        std::cerr << "SDL_mixer Failed to Initialize: " << Mix_GetError() << '\n';
-        throw std::runtime_error("SDL_mixer Failed to Initialize");
-    }
-
     // Set running
     running = true;
 }

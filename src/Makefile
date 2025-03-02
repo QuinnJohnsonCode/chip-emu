@@ -2,7 +2,7 @@ CXX=g++
 CXXFLAGS=-std=c++23 -Wall -Werror -Wextra
 RM=rm -f
 LDFLAGS=-g $(shell root-config --ldflags)
-LDLIBS=$(shell root-config --libs) -lSDL2 -lSDL2_mixer
+LDLIBS=$(shell root-config --libs) -lSDL2
 
 OBJDIR=obj
 SRCS=main.cpp interpreter.cpp display_manager.cpp
