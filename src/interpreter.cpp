@@ -24,7 +24,7 @@ void Interpreter::run()
         update_clocks();
 
         // Cycle (500hz / 60hz = 8.3 cycles)
-        for (int i = 0; i < 8; ++i)
+        for (int i = 0; i < cycles_per_frame; ++i)
             cycle();
 
         // Refresh display (only draw when display buffer is modified)
@@ -227,6 +227,11 @@ void Interpreter::update_clocks()
 {
     delay_timer = (delay_timer > 0) ? delay_timer - 1 : delay_timer;
     sound_timer = (sound_timer > 0) ? sound_timer - 1 : sound_timer;
+}
+
+void Interpreter::set_cycles_per_frame(int cycles)
+{
+    cycles_per_frame = cycles;
 }
 
 void Interpreter::load_font_into_memory()

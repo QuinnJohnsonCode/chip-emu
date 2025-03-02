@@ -7,10 +7,10 @@
 DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
 {
     // Critical Error: Video failed to initialize
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
     {
-        std::cerr << "SDL_INIT_VIDEO failed: " << SDL_GetError() << '\n';
-        throw std::runtime_error("SDL_INIT_VIDEO Failed");
+        std::cerr << "SDL_INIT_VIDEO/SDL_INIT_AUDIO failed: " << SDL_GetError() << '\n';
+        throw std::runtime_error("SDL_INIT_VIDEO/SDL_INIT_AUDIO Failed");
     }
 
     // Window
@@ -42,6 +42,11 @@ DisplayManager::DisplayManager() : window(nullptr), renderer(nullptr)
         throw std::runtime_error("Texture Creation Failed");
     }
 
+    if (Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0)
+    {
+        std::cerr << "SDL_mixer Failed to Initialize: " << Mix_GetError() << '\n';
+        throw std::runtime_error("SDL_mixer Failed to Initialize");
+    }
 
     // Set running
     running = true;

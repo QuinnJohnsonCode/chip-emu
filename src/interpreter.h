@@ -33,6 +33,7 @@ public:
     void step_program_counter();
     void step_back_program_counter();
     void update_clocks();
+    void set_cycles_per_frame(int cycles);
     void load_font_into_memory();
     void load_rom_into_memory(const std::string& path);
     void display_memory(uint16_t start_addr);
@@ -96,6 +97,7 @@ private:
 
     // Instructions
     std::uint16_t curr_instruction{};
+    int cycles_per_frame = 8;
 
     // Constants
     static constexpr std::uint16_t START_ADDRESS = 0x200;
