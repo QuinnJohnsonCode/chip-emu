@@ -22,8 +22,8 @@ void Interpreter::run()
         // Decrement timers
         update_clocks();
 
-        // Cycle
-        for (int i = 0; i < 11; ++i)
+        // Cycle (500hz / 60hz = 8.3 cycles)
+        for (int i = 0; i < 8; ++i)
             cycle();
 
         // Refresh display (only draw when display buffer is modified)
@@ -33,8 +33,8 @@ void Interpreter::run()
             draw_flag = false;
         }
 
-        // Delay 12ms
-        display_manager.delay(12);
+        // Delay 16ms (60fps)
+        display_manager.delay(16);
     }
 }
 
@@ -339,20 +339,23 @@ void Interpreter::routine_8xy0(const instruction_parameters& ip)
 
 void Interpreter::routine_8xy1(const instruction_parameters& ip)
 {
-    // Set Vx = Vx or Vy
+    // Set Vx = Vx or Vy (reset Vf)
     registers[ip.X] |= registers[ip.Y];
+    registers[0xF] = 0;
 }
 
 void Interpreter::routine_8xy2(const instruction_parameters& ip)
 {
-    // Set Vx = Vx and Vy
+    // Set Vx = Vx and Vy (reset Vf)
     registers[ip.X] &= registers[ip.Y];
+    registers[0xF] = 0;
 }
 
 void Interpreter::routine_8xy3(const instruction_parameters& ip)
 {
-    // Set Vx = Vx xor Vy
+    // Set Vx = Vx xor Vy (reset Vf)
     registers[ip.X] ^= registers[ip.Y];
+    registers[0xF] = 0;
 }
 
 void Interpreter::routine_8xy4(const instruction_parameters& ip)
@@ -377,8 +380,8 @@ void Interpreter::routine_8xy5(const instruction_parameters& ip)
 void Interpreter::routine_8xy6(const instruction_parameters& ip)
 {
     // Shift Right Vx
-    std::uint8_t bit_out = registers[ip.X] & 0b1;
-    registers[ip.X] >>= 0b1;
+    std::uint8_t bit_out = registers[ip.Y] & 0b1;
+    registers[ip.X] = registers[ip.Y] >> 0b1;
     registers[0xF] = bit_out;
     
 }
@@ -397,8 +400,8 @@ void Interpreter::routine_8xy7(const instruction_parameters& ip)
 void Interpreter::routine_8xyE(const instruction_parameters& ip)
 {
     // Shift Left Vx
-    std::uint8_t bit_out = (registers[ip.X] >> 0x7);
-    registers[ip.X] <<= 0b1;
+    std::uint8_t bit_out = (registers[ip.Y] >> 0x7);
+    registers[ip.X] = registers[ip.Y] << 0b1;
     registers[0xF] = bit_out;
     
 }
@@ -427,8 +430,8 @@ void Interpreter::routine_Dxyn(const instruction_parameters& ip)
     // Draw
 
     // Set X/Y to Vx % 64 and Vy % 32 respectively
-    auto x = registers[ip.X] % 64;
-    auto y = registers[ip.Y] % 32;
+    auto x = registers[ip.X] & 63;
+    auto y = registers[ip.Y] & 31;
 
     // Set Vf to 0
     registers[0xF] = 0;
@@ -442,6 +445,10 @@ void Interpreter::routine_Dxyn(const instruction_parameters& ip)
             std::uint8_t bit = (sprite_byte >> (7 - col)) & 1; // Take first bit
             std::uint32_t position = (64 * (y + row)) + x + col; // Get (x,y) position offsetted by row/col
             
+            // Clip
+            if (x + col >= 64 || y + row >= 32)
+                continue;
+
             if (bit == 0x01)
             {
                 if (display[position] == 0xFFFFFFFF)
@@ -547,14 +554,14 @@ void Interpreter::routine_Fx33(const instruction_parameters& ip)
 
 void Interpreter::routine_Fx55(const instruction_parameters& ip)
 {
-    // Save registers V0 - Vx to memory starting at I
+    // Save registers V0 - Vx to memory starting at I (increment I)
     for (std::uint8_t i = 0; i <= ip.X; ++i)
-        memory[index + i] = registers[i];
+        memory[index++] = registers[i];
 }
 
 void Interpreter::routine_Fx65(const instruction_parameters& ip)
 {
-    // Load registers V0 - Vx from memory starting at I
+    // Load registers V0 - Vx from memory starting at I (increment I)
     for (std::uint8_t i = 0; i <= ip.X; ++i)
-        registers[i] = memory[index + i];
+        registers[i] = memory[index++];
 }
