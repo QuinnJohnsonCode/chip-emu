@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
+#include <random>
 
 void Interpreter::init()
 {
@@ -32,6 +33,8 @@ void Interpreter::run()
             display_manager.draw_from_buffer_scaled(display);
             draw_flag = false;
         }
+
+        display_manager.draw_from_buffer_scaled(display);
 
         // Delay 16ms (60fps)
         display_manager.delay(16);
@@ -149,6 +152,9 @@ void Interpreter::execute(const instruction_parameters& ip)
         case 0xB:
             routine_Bnnn(ip);
             break;
+        case 0xC:
+            routine_Cxnn(ip);
+            break;
         case 0xD:
             routine_Dxyn(ip);
             break;
@@ -183,6 +189,9 @@ void Interpreter::execute(const instruction_parameters& ip)
                     break;
                 case 0x1E:
                     routine_Fx1E(ip);
+                    break;
+                case 0x29:
+                    routine_Fx29(ip);
                     break;
                 case 0x33:
                     routine_Fx33(ip);
@@ -425,6 +434,17 @@ void Interpreter::routine_Bnnn(const instruction_parameters& ip)
     pc = ip.NNN + registers[0];
 }
 
+void Interpreter::routine_Cxnn(const instruction_parameters& ip)
+{
+    // Random (generate a random number, binary AND it with NN, put result in Vx)
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 255);
+
+    std::uint8_t rand = distrib(gen);
+    registers[ip.X] = rand & ip.NN;
+}
+
 void Interpreter::routine_Dxyn(const instruction_parameters& ip)
 {
     // Draw
@@ -532,6 +552,12 @@ void Interpreter::routine_Fx1E(const instruction_parameters& ip)
 {
     // Set I = I + Vx;
     index += registers[ip.X];
+}
+
+void Interpreter::routine_Fx29(const instruction_parameters& ip)
+{
+    // Set I = Address of hexadecimal character in Vx
+    index = (registers[ip.X] & 0xF) * 0x5 + FONT_ADDRESS;
 }
 
 void Interpreter::routine_Fx33(const instruction_parameters& ip)
