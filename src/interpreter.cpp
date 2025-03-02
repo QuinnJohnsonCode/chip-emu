@@ -295,8 +295,11 @@ void Interpreter::routine_00E0()
 void Interpreter::routine_00EE()
 {
     // Set PC = stack top and pop stack
-    pc = stack.top();
-    stack.pop();
+    if (!stack.empty())
+    {
+        pc = stack.top();
+        stack.pop();
+    }
 }
 
 void Interpreter::routine_1nnn(const instruction_parameters& ip)
@@ -388,7 +391,7 @@ void Interpreter::routine_8xy5(const instruction_parameters& ip)
     std::uint8_t reg_y = registers[ip.Y];
     
     registers[ip.X] = reg_x - reg_y;
-    registers[0xF] = (reg_x < reg_y) ? 0 : 1;
+    registers[0xF] = (reg_x >= reg_y) ? 1 : 0;
 }
 
 void Interpreter::routine_8xy6(const instruction_parameters& ip)
@@ -522,7 +525,7 @@ void Interpreter::routine_Fx0A(const instruction_parameters& ip)
         // If the stored pressed_key is off (released), then continue execution
         if (!keypad[pressed_key])
         {
-            registers[ip.X] = keypad[pressed_key];
+            registers[ip.X] = pressed_key;
             release_flag = true;
             pressed_key = 0xFF; // Reset pressed_key
         }
@@ -557,6 +560,8 @@ void Interpreter::routine_Fx1E(const instruction_parameters& ip)
 {
     // Set I = I + Vx;
     index += registers[ip.X];
+    registers[0xF] = (index > 0xFFF) ? 1 : 0;
+    index &= 0xFFF;
 }
 
 void Interpreter::routine_Fx29(const instruction_parameters& ip)
