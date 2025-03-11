@@ -4,7 +4,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/QuinnJohnsonCode/chip-emu">
-    <img src="demos/tetris.gif" alt="Tetris running in Chip-8 Emulator" width="80" height="80">
+    <img src="demos/tetris.gif" alt="Tetris running in Chip-8 Emulator" width="160" height="160">
   </a>
 
 <h3 align="center">chip-emu</h3>
@@ -46,16 +46,12 @@
 
 chip-emu is a simple and lightweight CHIP-8 emulator written in C++ using SDL2 for graphics. It provides a straightforward way to run CHIP-8 programs on modern systems.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 ### Built With
 
 * [![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)](https://isocpp.org/)
 * [![SDL2](https://img.shields.io/badge/SDL2-000000?style=for-the-badge&logo=sdl&logoColor=white)][SDL-url]
 * [![Make](https://img.shields.io/badge/Make-065535?style=for-the-badge&logo=gnu&logoColor=white)](https://www.gnu.org/software/make/)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- GETTING STARTED -->
@@ -95,8 +91,6 @@ Make sure you have the following installed:
    make
    ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -111,9 +105,6 @@ Example:
 ./main.out 10 roms/TETRIS.ch8
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 <!-- ROADMAP -->
 ## Roadmap
 
@@ -125,14 +116,10 @@ Example:
 
 See the [open issues](https://github.com/QuinnJohnsonCode/chip-emu/issues) for a full list of proposed features and known issues.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- LICENSE -->
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- CONTACT -->
@@ -142,8 +129,6 @@ Quinn Johnson - [GitHub](https://github.com/QuinnJohnsonCode)
 
 Project Link: [https://github.com/QuinnJohnsonCode/chip-emu](https://github.com/QuinnJohnsonCode/chip-emu)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
@@ -151,8 +136,6 @@ Project Link: [https://github.com/QuinnJohnsonCode/chip-emu](https://github.com/
 * [Cowgod's CHIP-8 Technical Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
 * [High-level Guide to CHIP-8](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/)
 * [SDL2 Documentation](https://wiki.libsdl.org/)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
