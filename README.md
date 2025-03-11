@@ -1,7 +1,5 @@
-<a id="readme-top"></a>
 
 <!-- PROJECT LOGO -->
-<br />
 <div align="center">
   <a href="https://github.com/QuinnJohnsonCode/chip-emu">
     <img src="demos/tetris.gif" alt="Tetris running in Chip-8 Emulator" width="160" height="160">
